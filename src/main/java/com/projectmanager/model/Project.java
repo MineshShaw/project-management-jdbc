@@ -1,25 +1,27 @@
 package com.projectmanager.model;
 
+import java.math.*;
 import java.time.LocalDateTime;
+import java.util.*;
+
 import com.projectmanager.model.enums.ProjectStatus;
 
 public class Project {
-    private String projectId;
+    private UUID projectId;
     private String projectName;
     private String description;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    private String teamId;
+    private UUID teamId;
     private ProjectStatus status;
     private boolean completed;
-    private double progressPercent;
+    private BigDecimal progressPercent;
 
-    // Constructors
     public Project() {}
 
-    public Project(String projectId, String projectName, String description,
+    public Project(UUID projectId, String projectName, String description,
                    LocalDateTime startDate, LocalDateTime endDate,
-                   String teamId, ProjectStatus status, boolean completed, double progressPercent) {
+                   UUID teamId, ProjectStatus status, boolean completed, BigDecimal progressPercent) {
         this.projectId = projectId;
         this.projectName = projectName;
         this.description = description;
@@ -30,12 +32,11 @@ public class Project {
         this.completed = completed;
         this.progressPercent = progressPercent;
     }
-
-    // Getters and Setters
-    public String getProjectId() {
+    
+    public UUID getProjectId() {
         return projectId;
     }
-    public void setProjectId(String projectId) {
+    public void setProjectId(UUID projectId) {
         this.projectId = projectId;
     }
 
@@ -67,10 +68,10 @@ public class Project {
         this.endDate = endDate;
     }
 
-    public String getTeamId() {
+    public UUID getTeamId() {
         return teamId;
     }
-    public void setTeamId(String teamId) {
+    public void setTeamId(UUID teamId) {
         this.teamId = teamId;
     }
 
@@ -88,10 +89,10 @@ public class Project {
         this.completed = completed;
     }
 
-    public double getProgressPercent() {
+    public BigDecimal getProgressPercent() {
         return progressPercent;
     }
-    public void setProgressPercent(double progressPercent) {
+    public void setProgressPercent(BigDecimal progressPercent) {
         this.progressPercent = progressPercent;
     }
 }
