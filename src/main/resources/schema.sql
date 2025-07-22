@@ -120,3 +120,121 @@ ADD CONSTRAINT fk_team_assignment_team
 FOREIGN KEY (team_id) REFERENCES teams(team_id),
 ADD CONSTRAINT fk_team_assignment_employee
 FOREIGN KEY (employee_id) REFERENCES employees(employee_id);
+
+-- ===========================
+-- Phase 3: Add Triggers
+-- ===========================
+
+DELIMITER $$
+
+CREATE TRIGGER trg_utilization_delete
+AFTER DELETE ON task_assignment
+FOR EACH ROW
+BEGIN
+  UPDATE employee_utilization
+  SET task_count = task_count - 1
+  WHERE employee_id = OLD.employee_id;
+END$$
+
+CREATE TRIGGER trg_utilization_insert
+AFTER INSERT ON task_assignment
+FOR EACH ROW
+BEGIN
+  INSERT INTO employee_utilization (employee_id, task_count)
+  VALUES (NEW.employee_id, 1)
+  ON DUPLICATE KEY UPDATE task_count = task_count + 1;
+END$$
+
+CREATE TRIGGER trg_decrement_utilization_on_completion
+AFTER UPDATE ON tasks
+FOR EACH ROW
+BEGIN
+  IF NEW.completed = TRUE AND OLD.completed = FALSE THEN
+    UPDATE employee_utilization eu
+    JOIN task_assignment ta ON ta.employee_id = eu.employee_id
+    SET eu.task_count = eu.task_count - 1
+    WHERE ta.task_id = NEW.task_id;
+  END IF;
+END$$
+
+CREATE TRIGGER trg_update_progress_after_insert
+AFTER INSERT ON tasks
+FOR EACH ROW
+BEGIN
+  DECLARE total_tasks INT DEFAULT 0;
+  DECLARE completed_tasks INT DEFAULT 0;
+  DECLARE progress DECIMAL(5,2) DEFAULT 0;
+
+  SELECT COUNT(*) INTO total_tasks FROM tasks WHERE project_id = NEW.project_id;
+  SELECT COUNT(*) INTO completed_tasks FROM tasks WHERE project_id = NEW.project_id AND completed = TRUE;
+
+  IF total_tasks > 0 THEN
+    SET progress = (completed_tasks * 100.0) / total_tasks;
+  END IF;
+
+  UPDATE projects
+  SET progress_percent = progress
+  WHERE project_id = NEW.project_id;
+END$$
+
+CREATE TRIGGER trg_update_progress_after_delete
+AFTER DELETE ON tasks
+FOR EACH ROW
+BEGIN
+  DECLARE total_tasks INT DEFAULT 0;
+  DECLARE completed_tasks INT DEFAULT 0;
+  DECLARE progress DECIMAL(5,2) DEFAULT 0;
+
+  SELECT COUNT(*) INTO total_tasks FROM tasks WHERE project_id = OLD.project_id;
+  SELECT COUNT(*) INTO completed_tasks FROM tasks WHERE project_id = OLD.project_id AND completed = TRUE;
+
+  IF total_tasks > 0 THEN
+    SET progress = (completed_tasks * 100.0) / total_tasks;
+  END IF;
+
+  UPDATE projects
+  SET progress_percent = progress
+  WHERE project_id = OLD.project_id;
+END$$
+
+CREATE TRIGGER trg_update_progress_after_update
+AFTER UPDATE ON tasks
+FOR EACH ROW
+BEGIN
+  DECLARE total_tasks INT DEFAULT 0;
+  DECLARE completed_tasks INT DEFAULT 0;
+  DECLARE progress DECIMAL(5,2) DEFAULT 0;
+
+  -- Check if completion status or project_id changed
+  IF NEW.completed != OLD.completed OR NEW.project_id != OLD.project_id THEN
+
+    -- Recalculate for NEW.project_id
+    SELECT COUNT(*) INTO total_tasks FROM tasks WHERE project_id = NEW.project_id;
+    SELECT COUNT(*) INTO completed_tasks FROM tasks WHERE project_id = NEW.project_id AND completed = TRUE;
+
+    IF total_tasks > 0 THEN
+      SET progress = (completed_tasks * 100.0) / total_tasks;
+    END IF;
+
+    UPDATE projects
+    SET progress_percent = progress
+    WHERE project_id = NEW.project_id;
+
+    -- Also recalculate for OLD.project_id (in case task moved projects)
+    IF OLD.project_id != NEW.project_id THEN
+      SELECT COUNT(*) INTO total_tasks FROM tasks WHERE project_id = OLD.project_id;
+      SELECT COUNT(*) INTO completed_tasks FROM tasks WHERE project_id = OLD.project_id AND completed = TRUE;
+
+      IF total_tasks > 0 THEN
+        SET progress = (completed_tasks * 100.0) / total_tasks;
+      END IF;
+
+      UPDATE projects
+      SET progress_percent = progress
+      WHERE project_id = OLD.project_id;
+    END IF;
+
+  END IF;
+END$$
+
+DELIMITER ;

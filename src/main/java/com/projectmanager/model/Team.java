@@ -1,27 +1,29 @@
 package com.projectmanager.model;
 
+import java.util.UUID;
+
 public class Team {
-    private String teamId;
+    private UUID teamId;
     private String teamName;
-    private String projectId;
+    private UUID projectId;
     private boolean active;
 
     public Team() {}
-    public Team(String teamId, String teamName, String projectId, boolean active) {
+    public Team(UUID teamId, String teamName, UUID projectId, boolean active) {
         this.teamId = teamId;
         this.teamName = teamName;
         this.projectId = projectId;
         this.active = active;
     }
 
-    public String getTeamId() { return teamId; }
-    public void setTeamId(String teamId) { this.teamId = teamId; }
+    public UUID getTeamId() { return teamId; }
+    public void setTeamId(UUID teamId) { this.teamId = teamId; }
 
     public String getTeamName() { return teamName; }
     public void setTeamName(String teamName) { this.teamName = teamName; }
 
-    public String getProjectId() { return projectId; }
-    public void setProjectId(String projectId) { this.projectId = projectId; }
+    public UUID getProjectId() { return projectId; }
+    public void setProjectId(UUID projectId) { this.projectId = projectId; }
 
     public boolean isActive() { return active; }
     public void setActive(boolean active) { this.active = active; }

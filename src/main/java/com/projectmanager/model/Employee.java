@@ -1,21 +1,23 @@
 package com.projectmanager.model;
 
+import java.util.UUID;
+
 public class Employee {
-    private String employeeId;
+    private UUID employeeId;
     private String employeeName;
     private String employeeEmail;
     private String contact;
 
     public Employee() {}
-    public Employee(String employeeId, String employeeName, String employeeEmail, String contact) {
+    public Employee(UUID employeeId, String employeeName, String employeeEmail, String contact) {
         this.employeeId = employeeId;
         this.employeeName = employeeName;
         this.employeeEmail = employeeEmail;
         this.contact = contact;
     }
 
-    public String getEmployeeId() { return employeeId; }
-    public void setEmployeeId(String employeeId) { this.employeeId = employeeId; }
+    public UUID getEmployeeId() { return employeeId; }
+    public void setEmployeeId(UUID employeeId) { this.employeeId = employeeId; }
 
     public String getEmployeeName() { return employeeName; }
     public void setEmployeeName(String employeeName) { this.employeeName = employeeName; }

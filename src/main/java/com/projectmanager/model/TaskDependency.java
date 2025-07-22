@@ -1,19 +1,21 @@
 package com.projectmanager.model;
 
+import java.util.UUID;
+
 public class TaskDependency {
-    private String taskId;
-    private String dependsOn;
+    private UUID taskId;
+    private UUID dependsOn;
 
     public TaskDependency() {}
-    public TaskDependency(String taskId, String dependsOn) {
+    public TaskDependency(UUID taskId, UUID dependsOn) {
         this.taskId = taskId;
         this.dependsOn = dependsOn;
     }
 
-    public String getTaskId() { return taskId; }
-    public void setTaskId(String taskId) { this.taskId = taskId; }
+    public UUID getTaskId() { return taskId; }
+    public void setTaskId(UUID taskId) { this.taskId = taskId; }
 
-    public String getDependsOn() { return dependsOn; }
-    public void setDependsOn(String dependsOn) { this.dependsOn = dependsOn; }
+    public UUID getDependsOn() { return dependsOn; }
+    public void setDependsOn(UUID dependsOn) { this.dependsOn = dependsOn; }
 }
 

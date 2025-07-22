@@ -1,19 +1,21 @@
 package com.projectmanager.model;
 
+import java.util.UUID;
+
 public class TeamAssignment {
-    private String teamId;
-    private String employeeId;
+    private UUID teamId;
+    private UUID employeeId;
 
     public TeamAssignment() {}
-    public TeamAssignment(String teamId, String employeeId) {
+    public TeamAssignment(UUID teamId, UUID employeeId) {
         this.teamId = teamId;
         this.employeeId = employeeId;
     }
 
-    public String getTeamId() { return teamId; }
-    public void setTeamId(String teamId) { this.teamId = teamId; }
+    public UUID getTeamId() { return teamId; }
+    public void setTeamId(UUID teamId) { this.teamId = teamId; }
 
-    public String getEmployeeId() { return employeeId; }
-    public void setEmployeeId(String employeeId) { this.employeeId = employeeId; }
+    public UUID getEmployeeId() { return employeeId; }
+    public void setEmployeeId(UUID employeeId) { this.employeeId = employeeId; }
 }
 
