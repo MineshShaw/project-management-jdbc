@@ -237,4 +237,52 @@ BEGIN
   END IF;
 END$$
 
+CREATE TRIGGER trg_check_due_date
+BEFORE INSERT ON tasks
+FOR EACH ROW
+BEGIN
+  DECLARE proj_start DATE;
+  DECLARE proj_end DATE;
+
+  SELECT start_date, end_date
+  INTO proj_start, proj_end
+  FROM projects
+  WHERE project_id = NEW.project_id;
+
+  IF NEW.due_date < proj_start THEN
+    SIGNAL SQLSTATE '45000'
+    SET MESSAGE_TEXT = 'Task due date is before project start date';
+  END IF;
+
+  IF NEW.due_date > proj_end THEN
+    SIGNAL SQLSTATE '45000'
+    SET MESSAGE_TEXT = 'Task due date is after project end date';
+  END IF;
+END$$
+
+CREATE TRIGGER trg_check_due_date_update
+BEFORE UPDATE ON tasks
+FOR EACH ROW
+BEGIN
+  DECLARE proj_start DATE;
+  DECLARE proj_end DATE;
+
+  SELECT start_date, end_date
+  INTO proj_start, proj_end
+  FROM projects
+  WHERE project_id = NEW.project_id;
+
+  IF NEW.due_date < proj_start THEN
+    SIGNAL SQLSTATE '45000'
+    SET MESSAGE_TEXT = 'Updated task due date is before project start date';
+  END IF;
+
+  IF NEW.due_date > proj_end THEN
+    SIGNAL SQLSTATE '45000'
+    SET MESSAGE_TEXT = 'Updated task due date is after project end date';
+  END IF;
+END$$
+
 DELIMITER ;
+
+

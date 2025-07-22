@@ -1,46 +1,25 @@
 package com.projectmanager.util;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Properties;
+import java.util.Scanner;
 
 public class DBConnectionUtil {
-
-    private static String URL;
-    private static String USER;
-    private static String PASSWORD;
-
-    static {
-        try (InputStream input = DBConnectionUtil.class.getClassLoader().getResourceAsStream("config.properties")) {
-            Properties prop = new Properties();
-            prop.load(input);
-            URL = prop.getProperty("db.url");
-            USER = prop.getProperty("db.user");
-            PASSWORD = prop.getProperty("db.password");
-
-            Class.forName("com.mysql.cj.jdbc.Driver");
-
-        } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Failed to load DB configuration.");
-            e.printStackTrace();
-        }
-    }
+    private static final String URL = "jdbc:mysql://localhost:3306/project_manager";
+    private static final String USERNAME = "root";
+    private static Connection connection = null;
 
     public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(URL, USER, PASSWORD);
-    }
+        if (connection == null || connection.isClosed()) {
+            // Ask for password at runtime
+            Scanner scanner = new Scanner(System.in);
+            System.out.print("Enter database password: ");
+            String password = scanner.nextLine();
+            scanner.close();
 
-    public static void closeConnection(Connection conn) {
-        try {
-            if (conn != null && !conn.isClosed()) {
-                conn.close();
-            }
-        } catch (SQLException e) {
-            System.err.println("Error closing connection.");
-            e.printStackTrace();
+            connection = DriverManager.getConnection(URL, USERNAME, password);
         }
+        return connection;
     }
 }

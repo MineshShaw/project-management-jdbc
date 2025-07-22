@@ -126,13 +126,7 @@ public class FrequentQueryDAO {
     // 5. Generate project progress summary
     public List<Map<String, Object>> getProjectProgressSummary() {
         String query = """
-            SELECT
-              t.project_id,
-              COUNT(*) AS total_tasks,
-              SUM(CASE WHEN t.completed THEN 1 ELSE 0 END) AS completed_tasks,
-              ROUND(SUM(CASE WHEN t.completed THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS progress_percent
-            FROM tasks t
-            GROUP BY t.project_id
+            SELECT project_id, progress_percent FROM projects;
             """;
         List<Map<String, Object>> summary = new ArrayList<>();
 
@@ -143,8 +137,6 @@ public class FrequentQueryDAO {
             while (rs.next()) {
                 Map<String, Object> row = new HashMap<>();
                 row.put("projectId", UUID.fromString(rs.getString("project_id")));
-                row.put("totalTasks", rs.getInt("total_tasks"));
-                row.put("completedTasks", rs.getInt("completed_tasks"));
                 row.put("progressPercent", rs.getBigDecimal("progress_percent"));
                 summary.add(row);
             }
