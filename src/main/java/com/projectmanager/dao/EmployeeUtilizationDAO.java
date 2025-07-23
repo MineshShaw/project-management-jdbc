@@ -1,7 +1,7 @@
 package com.projectmanager.dao;
 
 import com.projectmanager.model.EmployeeUtilization;
-import com.projectmanager.util.DBConnectionUtil;
+
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -51,6 +51,4 @@ public class EmployeeUtilizationDAO {
 
         return false;
     }
-
-    // Insert/update methods removed as task_count is managed via triggers
 }

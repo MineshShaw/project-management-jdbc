@@ -1,11 +1,12 @@
 package com.projectmanager.dao;
 
 import com.projectmanager.model.Team;
-import com.projectmanager.util.DBConnectionUtil;
+
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class TeamDAO {
@@ -130,7 +131,9 @@ public class TeamDAO {
         Team team = new Team();
         team.setTeamId(UUID.fromString(rs.getString("team_id")));
         team.setTeamName(rs.getString("team_name"));
-        team.setProjectId(UUID.fromString(rs.getString("project_id")));
+        team.setProjectId(Optional.ofNullable(rs.getString("project_id"))
+                              .map(UUID::fromString)
+                              .orElse(null));
         team.setActive(rs.getBoolean("active"));
         return team;
     }

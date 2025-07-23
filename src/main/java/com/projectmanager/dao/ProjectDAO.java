@@ -2,11 +2,13 @@ package com.projectmanager.dao;
 
 import com.projectmanager.model.Project;
 import com.projectmanager.model.enums.ProjectStatus;
-import com.projectmanager.util.DBConnectionUtil;
 
+import java.math.BigDecimal;
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class ProjectDAO {
@@ -187,16 +189,33 @@ public class ProjectDAO {
     }
 
     private Project extractProjectFromResultSet(ResultSet rs) throws SQLException {
-        Project project = new Project();
-        project.setProjectId(UUID.fromString(rs.getString("project_id")));
-        project.setProjectName(rs.getString("project_name"));
-        project.setDescription(rs.getString("description"));
-        project.setStartDate(rs.getTimestamp("start_date").toLocalDateTime());
-        project.setEndDate(rs.getTimestamp("end_date").toLocalDateTime());
-        project.setTeamId(UUID.fromString(rs.getString("team_id")));
-        project.setStatus(ProjectStatus.valueOf(rs.getString("status")));
-        project.setCompleted(rs.getBoolean("completed"));
-        project.setProgressPercent(rs.getBigDecimal("progress_percent"));
-        return project;
+        UUID projectId = UUID.fromString(rs.getString("project_id"));
+
+        String name = rs.getString("project_name");
+        String desc = rs.getString("description");
+
+        LocalDateTime startDate = Optional.ofNullable(rs.getTimestamp("start_date"))
+                                          .map(Timestamp::toLocalDateTime)
+                                          .orElse(null);
+
+        LocalDateTime endDate = Optional.ofNullable(rs.getTimestamp("end_date"))
+                                        .map(Timestamp::toLocalDateTime)
+                                        .orElse(null);
+
+        UUID teamId = Optional.ofNullable(rs.getString("team_id"))
+                              .map(UUID::fromString)
+                              .orElse(null);
+
+        ProjectStatus status = Optional.ofNullable(rs.getString("status"))
+                                       .map(ProjectStatus::valueOf)
+                                       .orElse(null);
+
+        Boolean completed = rs.getBoolean("completed");
+        if (rs.wasNull()) completed = null;
+
+        BigDecimal progress = rs.getBigDecimal("progress_percent");
+
+        return new Project(projectId, name, desc, startDate, endDate, teamId, status, completed != null && completed, progress);
     }
+
 }

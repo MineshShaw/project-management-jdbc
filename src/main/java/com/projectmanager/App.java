@@ -44,7 +44,7 @@ public class App {
                 System.out.println("0. Exit");
                 System.out.print("Enter choice: ");
                 int choice = scanner.nextInt();
-                scanner.nextLine(); // consume newline
+                scanner.nextLine();
 
                 switch (choice) {
                     case 1 -> {

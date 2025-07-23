@@ -1,6 +1,7 @@
 package com.projectmanager.model.enums;
 
 public enum TaskStatus {
+    NULL,
     TODO,
     IN_PROGRESS,
     DONE,
