@@ -283,6 +283,14 @@ BEGIN
   END IF;
 END$$
 
+CREATE TRIGGER trg_insert_utilization_on_employee
+AFTER INSERT ON employees
+FOR EACH ROW
+BEGIN
+  INSERT INTO employee_utilization (employee_id, task_count)
+  VALUES (NEW.employee_id, 0);
+END$$
+
 DELIMITER ;
 
 

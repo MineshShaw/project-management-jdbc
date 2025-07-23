@@ -10,14 +10,8 @@ public class DBConnectionUtil {
     private static final String USERNAME = "root";
     private static Connection connection = null;
 
-    public static Connection getConnection() throws SQLException {
+    public static Connection getConnection(String password) throws SQLException {
         if (connection == null || connection.isClosed()) {
-            // Ask for password at runtime
-            Scanner scanner = new Scanner(System.in);
-            System.out.print("Enter database password: ");
-            String password = scanner.nextLine();
-            scanner.close();
-
             connection = DriverManager.getConnection(URL, USERNAME, password);
         }
         return connection;

@@ -9,12 +9,17 @@ import java.util.List;
 import java.util.UUID;
 
 public class TaskAssignmentDAO {
+    Connection conn;
+
+    public TaskAssignmentDAO(Connection conn) {
+        this.conn = conn;
+    }
 
     public List<TaskAssignment> getAllAssignments() {
         List<TaskAssignment> assignments = new ArrayList<>();
         String query = "SELECT * FROM task_assignment";
 
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (
              PreparedStatement stmt = conn.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
 
@@ -33,7 +38,7 @@ public class TaskAssignmentDAO {
         List<TaskAssignment> assignments = new ArrayList<>();
         String query = "SELECT * FROM task_assignment WHERE task_id = ?";
 
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, taskId.toString());
@@ -53,12 +58,43 @@ public class TaskAssignmentDAO {
     public boolean insertAssignment(TaskAssignment assignment) {
         String query = "INSERT INTO task_assignment (task_id, employee_id, assigned_role) VALUES (?, ?, ?)";
 
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, assignment.getTaskId().toString());
-            stmt.setString(2, assignment.getEmployeeId().toString());
-            stmt.setString(3, assignment.getRole());
+            if (assignment.getEmployeeId() != null)
+                stmt.setString(2, assignment.getEmployeeId().toString());
+            else
+                stmt.setNull(2, Types.VARCHAR);
+            if (assignment.getRole() != null)
+                stmt.setString(3, assignment.getRole());
+            else
+                stmt.setNull(3, Types.VARCHAR);
+
+            return stmt.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public boolean updateAssignment(TaskAssignment assignment) {
+        String query = "UPDATE task_assignment SET employee_id = ?, assigned_role = ? WHERE task_id = ?";
+
+        try (
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            if (assignment.getEmployeeId() != null)
+                stmt.setString(1, assignment.getEmployeeId().toString());
+            else
+                stmt.setNull(1, Types.VARCHAR);
+            if (assignment.getRole() != null)
+                stmt.setString(2, assignment.getRole());
+            else
+                stmt.setNull(2, Types.VARCHAR);
+            stmt.setString(3, assignment.getTaskId().toString());
 
             return stmt.executeUpdate() > 0;
 
@@ -72,7 +108,7 @@ public class TaskAssignmentDAO {
     public boolean deleteAssignment(UUID taskId, UUID employeeId) {
         String query = "DELETE FROM task_assignment WHERE task_id = ? AND employee_id = ?";
 
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, taskId.toString());

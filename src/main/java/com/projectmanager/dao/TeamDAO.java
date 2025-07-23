@@ -10,11 +10,17 @@ import java.util.UUID;
 
 public class TeamDAO {
 
+    private Connection conn;
+
+    public TeamDAO(Connection conn) {
+        this.conn = conn;
+    }
+
     public List<Team> getAllTeams() {
         List<Team> teams = new ArrayList<>();
         String query = "SELECT * FROM teams";
 
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (
              PreparedStatement stmt = conn.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
 
@@ -32,7 +38,7 @@ public class TeamDAO {
     public Team getTeamById(UUID teamId) {
         String query = "SELECT * FROM teams WHERE team_id = ?";
 
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, teamId.toString());
@@ -52,12 +58,21 @@ public class TeamDAO {
     public boolean insertTeam(Team team) {
         String query = "INSERT INTO teams (team_id, team_name, project_id, active) VALUES (?, ?, ?, ?)";
 
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
-            stmt.setString(1, team.getTeamId().toString());
-            stmt.setString(2, team.getTeamName());
-            stmt.setString(3, team.getProjectId().toString());
+            if (team.getTeamId() != null)
+                stmt.setString(1, team.getTeamId().toString());
+            else
+                throw new IllegalArgumentException("Team ID cannot be null");
+            if (team.getTeamName() != null)
+                stmt.setString(2, team.getTeamName());
+            else
+                stmt.setNull(2, Types.VARCHAR);
+            if (team.getProjectId() != null)
+                stmt.setString(3, team.getProjectId().toString());
+            else
+                throw new IllegalArgumentException("Project ID cannot be null");
             stmt.setBoolean(4, team.isActive());
 
             return stmt.executeUpdate() > 0;
@@ -72,11 +87,17 @@ public class TeamDAO {
     public boolean updateTeam(Team team) {
         String query = "UPDATE teams SET team_name = ?, project_id = ?, active = ? WHERE team_id = ?";
 
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
-            stmt.setString(1, team.getTeamName());
-            stmt.setString(2, team.getProjectId().toString());
+            if (team.getTeamName() != null)
+                stmt.setString(1, team.getTeamName());
+            else
+                stmt.setNull(1, Types.VARCHAR);
+            if (team.getProjectId() != null)
+                stmt.setString(2, team.getProjectId().toString());
+            else
+                throw new IllegalArgumentException("Project ID cannot be null");
             stmt.setBoolean(3, team.isActive());
             stmt.setString(4, team.getTeamId().toString());
 
@@ -92,7 +113,7 @@ public class TeamDAO {
     public boolean deleteTeam(UUID teamId) {
         String query = "DELETE FROM teams WHERE team_id = ?";
 
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, teamId.toString());

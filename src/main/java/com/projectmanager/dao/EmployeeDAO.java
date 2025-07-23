@@ -9,13 +9,15 @@ import java.util.List;
 import java.util.UUID;
 
 public class EmployeeDAO {
-
+    private Connection conn;
+    public EmployeeDAO(Connection conn) {
+        this.conn = conn;
+    }
     public List<Employee> getAllEmployees() {
         List<Employee> employees = new ArrayList<>();
         String query = "SELECT * FROM employees";
 
-        try (Connection conn = DBConnectionUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query);
+        try (PreparedStatement stmt = conn.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
@@ -32,8 +34,7 @@ public class EmployeeDAO {
     public Employee getEmployeeById(UUID employeeId) {
         String query = "SELECT * FROM employees WHERE employee_id = ?";
 
-        try (Connection conn = DBConnectionUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, employeeId.toString());
             ResultSet rs = stmt.executeQuery();
@@ -52,13 +53,25 @@ public class EmployeeDAO {
     public boolean insertEmployee(Employee employee) {
         String query = "INSERT INTO employees (employee_id, employee_name, employee_email, contact) VALUES (?, ?, ?, ?)";
 
-        try (Connection conn = DBConnectionUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            if (employee.getEmployeeId() != null)
+                stmt.setString(1, employee.getEmployeeId().toString());
+            else
+                throw new IllegalArgumentException("Employee ID cannot be null");
+            if (employee.getEmployeeName() != null)
+                stmt.setString(2, employee.getEmployeeName());
+            else
+                stmt.setNull(2, Types.VARCHAR);
 
-            stmt.setString(1, employee.getEmployeeId().toString());
-            stmt.setString(2, employee.getEmployeeName());
-            stmt.setString(3, employee.getEmployeeEmail());
-            stmt.setString(4, employee.getContact());
+            if (employee.getEmployeeEmail() != null)
+                stmt.setString(3, employee.getEmployeeEmail());
+            else
+                stmt.setNull(3, Types.VARCHAR);
+
+            if (employee.getContact() != null)
+                stmt.setString(4, employee.getContact());
+            else
+                stmt.setNull(4, Types.VARCHAR);
 
             return stmt.executeUpdate() > 0;
 
@@ -72,12 +85,23 @@ public class EmployeeDAO {
     public boolean updateEmployee(Employee employee) {
         String query = "UPDATE employees SET employee_name = ?, employee_email = ?, contact = ? WHERE employee_id = ?";
 
-        try (Connection conn = DBConnectionUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
 
-            stmt.setString(1, employee.getEmployeeName());
-            stmt.setString(2, employee.getEmployeeEmail());
-            stmt.setString(3, employee.getContact());
+            if (employee.getEmployeeName() != null)
+                stmt.setString(1, employee.getEmployeeName());
+            else
+                stmt.setNull(1, Types.VARCHAR);
+
+            if (employee.getEmployeeEmail() != null)
+                stmt.setString(2, employee.getEmployeeEmail());
+            else
+                stmt.setNull(2, Types.VARCHAR);
+
+            if (employee.getContact() != null)
+                stmt.setString(3, employee.getContact());
+            else
+                stmt.setNull(3, Types.VARCHAR);
+
             stmt.setString(4, employee.getEmployeeId().toString());
 
             return stmt.executeUpdate() > 0;
@@ -92,7 +116,7 @@ public class EmployeeDAO {
     public boolean deleteEmployee(UUID employeeId) {
         String query = "DELETE FROM employees WHERE employee_id = ?";
 
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, employeeId.toString());

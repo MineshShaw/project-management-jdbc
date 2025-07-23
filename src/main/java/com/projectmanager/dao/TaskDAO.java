@@ -10,12 +10,16 @@ import java.util.List;
 import java.util.UUID;
 
 public class TaskDAO {
+    private Connection conn;
+    public TaskDAO(Connection conn) {
+        this.conn = conn;
+    }
 
     public List<Task> getAllTasks() {
         List<Task> tasks = new ArrayList<>();
         String query = "SELECT * FROM tasks";
 
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (
              PreparedStatement stmt = conn.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
 
@@ -34,7 +38,7 @@ public class TaskDAO {
         List<Task> tasks = new ArrayList<>();
         String query = "SELECT * FROM tasks WHERE project_id = ?";
 
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, projectId.toString());
@@ -54,16 +58,35 @@ public class TaskDAO {
     public boolean insertTask(Task task) {
         String query = "INSERT INTO tasks (task_id, project_id, title, description, due_date, status, completed) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, task.getTaskId().toString());
-            stmt.setString(2, task.getProjectId().toString());
-            stmt.setString(3, task.getTitle());
-            stmt.setString(4, task.getDescription());
-            stmt.setTimestamp(5, Timestamp.valueOf(task.getDueDate()));
-            stmt.setString(6, task.getStatus().name());
-            stmt.setBoolean(7, task.isCompleted());
+
+            if (task.getProjectId() != null)
+                stmt.setString(2, task.getProjectId().toString());
+            else
+                throw new IllegalArgumentException("Project ID cannot be null");
+            if (task.getTitle() != null)
+                stmt.setString(3, task.getTitle());
+            else
+                stmt.setNull(3, Types.VARCHAR);
+            if (task.getDescription() != null)
+                stmt.setString(4, task.getDescription());
+            else
+                stmt.setNull(4, Types.VARCHAR);
+            if (task.getDueDate() != null)
+                stmt.setTimestamp(5, Timestamp.valueOf(task.getDueDate()));
+            else
+                stmt.setNull(5, Types.TIMESTAMP);
+            if (task.getStatus() != null)
+                stmt.setString(6, task.getStatus().name());
+            else
+                stmt.setNull(6, Types.VARCHAR);
+            if (task.isCompleted())
+                stmt.setBoolean(7, task.isCompleted());
+            else
+                stmt.setNull(7, Types.BOOLEAN);
 
             return stmt.executeUpdate() > 0;
 
@@ -77,7 +100,7 @@ public class TaskDAO {
     public boolean updateTask(Task task) {
         String query = "UPDATE tasks SET project_id = ?, title = ?, description = ?, due_date = ?, status = ?, completed = ? WHERE task_id = ?";
 
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, task.getProjectId().toString());
@@ -100,7 +123,7 @@ public class TaskDAO {
     public boolean deleteTask(UUID taskId) {
         String query = "DELETE FROM tasks WHERE task_id = ?";
 
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, taskId.toString());

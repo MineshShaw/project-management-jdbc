@@ -6,13 +6,18 @@ import java.sql.*;
 import java.util.*;
 
 public class FrequentQueryDAO {
+    private Connection conn;
+
+    public FrequentQueryDAO(Connection conn) {
+        this.conn = conn;
+    }
 
     // 1. List all tasks for a project with their statuses
     public List<Map<String, Object>> listTasksForProject(UUID projectId) {
         String query = "SELECT task_id, title, status FROM tasks WHERE project_id = ?";
         List<Map<String, Object>> tasks = new ArrayList<>();
 
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, projectId.toString());
@@ -45,7 +50,7 @@ public class FrequentQueryDAO {
             """;
         List<Map<String, Object>> tasks = new ArrayList<>();
 
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, employeeId.toString());
@@ -76,7 +81,7 @@ public class FrequentQueryDAO {
             """;
         List<UUID> taskIds = new ArrayList<>();
 
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (
              PreparedStatement stmt = conn.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
 
@@ -102,7 +107,7 @@ public class FrequentQueryDAO {
             """;
         List<Map<String, Object>> comments = new ArrayList<>();
 
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, taskId.toString());
@@ -130,7 +135,7 @@ public class FrequentQueryDAO {
             """;
         List<Map<String, Object>> summary = new ArrayList<>();
 
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (
              PreparedStatement stmt = conn.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
 
