@@ -5,10 +5,8 @@ import com.projectmanager.model.enums.TaskStatus;
 
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.util.*;
 
 public class TaskDAO {
     private Connection conn;
@@ -138,16 +136,17 @@ public class TaskDAO {
     }
 
     private Task extractTaskFromResultSet(ResultSet rs) throws SQLException {
-        Task task = new Task();
-        task.setTaskId(UUID.fromString(rs.getString("task_id")));
-        task.setProjectId(UUID.fromString(rs.getString("project_id")));
-        task.setTitle(rs.getString("title"));
-        task.setDescription(rs.getString("description"));
-        task.setDueDate(Optional.ofNullable(rs.getTimestamp("due_date"))
-                                          .map(Timestamp::toLocalDateTime)
-                                          .orElse(null));
-        task.setStatus(TaskStatus.valueOf(rs.getString("status")));
-        task.setCompleted(rs.getBoolean("completed"));
-        return task;
+        UUID taskId = UUID.fromString(rs.getString("task_id"));
+
+        UUID projectId = UUID.fromString(rs.getString("project_id"));
+        String title = rs.getString("title");
+        String description = rs.getString("description");
+        LocalDateTime dueDate = Optional.ofNullable(rs.getTimestamp("due_date"))
+                                        .map(Timestamp::toLocalDateTime)
+                                        .orElse(null);
+        TaskStatus status = TaskStatus.valueOf(rs.getString("status"));
+        boolean completed = rs.getBoolean("completed");
+
+        return new Task(taskId, projectId, title, description, dueDate, status, completed);
     }
 }

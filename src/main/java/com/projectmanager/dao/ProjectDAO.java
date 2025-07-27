@@ -207,7 +207,7 @@ public class ProjectDAO {
                               .orElse(null);
 
         ProjectStatus status = Optional.ofNullable(rs.getString("status"))
-                                       .map(ProjectStatus::valueOf)
+                                       .map(ProjectStatus::fromString)
                                        .orElse(null);
 
         Boolean completed = rs.getBoolean("completed");
