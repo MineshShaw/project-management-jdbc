@@ -1,2 +1,6 @@
-/out/
+out/
 *.class
+
+*.jar
+
+.vscode/

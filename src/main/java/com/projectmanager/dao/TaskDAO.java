@@ -1,6 +1,7 @@
 package com.projectmanager.dao;
 
 import com.projectmanager.model.Task;
+import com.projectmanager.model.enums.ProjectStatus;
 import com.projectmanager.model.enums.TaskStatus;
 
 
@@ -31,6 +32,27 @@ public class TaskDAO {
         }
 
         return tasks;
+    }
+
+    public Task getTaskById(UUID taskId) {
+        String query = "SELECT * FROM tasks WHERE task_id = ?";
+        Task task = null;
+
+        try (
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, taskId.toString());
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                task = extractTaskFromResultSet(rs);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return task;
     }
 
     public List<Task> getTasksByProjectId(UUID projectId) {
@@ -85,7 +107,7 @@ public class TaskDAO {
             if (task.isCompleted())
                 stmt.setBoolean(7, task.isCompleted());
             else
-                stmt.setNull(7, Types.BOOLEAN);
+                stmt.setBoolean(7, false);
 
             return stmt.executeUpdate() > 0;
 
@@ -105,7 +127,7 @@ public class TaskDAO {
             stmt.setString(1, task.getProjectId().toString());
             stmt.setString(2, task.getTitle());
             stmt.setString(3, task.getDescription());
-            stmt.setTimestamp(4, Timestamp.valueOf(task.getDueDate()));
+            stmt.setTimestamp(4, task.getDueDate() == null ? null : Timestamp.valueOf(task.getDueDate()));
             stmt.setString(5, task.getStatus().name());
             stmt.setBoolean(6, task.isCompleted());
             stmt.setString(7, task.getTaskId().toString());
@@ -144,7 +166,9 @@ public class TaskDAO {
         LocalDateTime dueDate = Optional.ofNullable(rs.getTimestamp("due_date"))
                                         .map(Timestamp::toLocalDateTime)
                                         .orElse(null);
-        TaskStatus status = TaskStatus.valueOf(rs.getString("status"));
+        TaskStatus status = Optional.ofNullable(rs.getString("status"))
+                                       .map(TaskStatus::fromString)
+                                       .orElse(null);
         boolean completed = rs.getBoolean("completed");
 
         return new Task(taskId, projectId, title, description, dueDate, status, completed);

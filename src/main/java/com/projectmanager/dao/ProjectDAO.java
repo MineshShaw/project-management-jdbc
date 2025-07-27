@@ -125,41 +125,46 @@ public class ProjectDAO {
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             if (project.getProjectName() != null)
-                stmt.setString(2, project.getProjectName());
+                stmt.setString(1, project.getProjectName());
+            else
+                stmt.setNull(1, Types.VARCHAR);
+
+            if (project.getDescription() != null)
+                stmt.setString(2, project.getDescription());
             else
                 stmt.setNull(2, Types.VARCHAR);
 
-            if (project.getDescription() != null)
-                stmt.setString(3, project.getDescription());
-            else
-                stmt.setNull(3, Types.VARCHAR);
-
             if (project.getStartDate() != null)
-                stmt.setTimestamp(4, Timestamp.valueOf(project.getStartDate()));
+                stmt.setTimestamp(3, Timestamp.valueOf(project.getStartDate()));
+            else
+                stmt.setNull(3, Types.TIMESTAMP);
+
+            if (project.getEndDate() != null)
+                stmt.setTimestamp(4, Timestamp.valueOf(project.getEndDate()));
             else
                 stmt.setNull(4, Types.TIMESTAMP);
 
-            if (project.getEndDate() != null)
-                stmt.setTimestamp(5, Timestamp.valueOf(project.getEndDate()));
-            else
-                stmt.setNull(5, Types.TIMESTAMP);
-
             if (project.getTeamId() != null)
-                stmt.setString(6, project.getTeamId().toString());
+                stmt.setString(5, project.getTeamId().toString());
+            else
+                stmt.setNull(5, Types.VARCHAR);
+
+            if (project.getStatus() != null)
+                stmt.setString(6, project.getStatus().name());
             else
                 stmt.setNull(6, Types.VARCHAR);
 
-            if (project.getStatus() != null)
-                stmt.setString(7, project.getStatus().name());
-            else
-                stmt.setNull(7, Types.VARCHAR);
-
-            stmt.setBoolean(8, project.isCompleted());
+            stmt.setBoolean(7, project.isCompleted());
 
             if (project.getProgressPercent() != null)
-                stmt.setBigDecimal(9, project.getProgressPercent());
+                stmt.setBigDecimal(8, project.getProgressPercent());
             else
-                stmt.setNull(9, Types.DECIMAL);
+                stmt.setNull(8, Types.DECIMAL);
+
+            if (project.getProjectId() != null)
+                stmt.setString(9, project.getProjectId().toString());
+            else
+                throw new IllegalArgumentException("Project ID cannot be null");
 
             return stmt.executeUpdate() > 0;
 
@@ -172,13 +177,25 @@ public class ProjectDAO {
     }
 
     public boolean deleteProject(UUID projectId) {
-        String query = "DELETE FROM projects WHERE project_id = ?";
+        String query1 = "DELETE FROM tasks WHERE project_id = ?";
+        String query2 = "UPDATE teams SET project_id = NULL WHERE project_id = ?";
+        String query3 = "DELETE FROM projects WHERE project_id = ?";
 
         try (
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+             PreparedStatement stmt = conn.prepareStatement(query1)) {
 
             stmt.setString(1, projectId.toString());
-            return stmt.executeUpdate() > 0;
+            if (stmt.executeUpdate() > 0) {
+                try (PreparedStatement stmt2 = conn.prepareStatement(query2)) {
+                    stmt2.setString(1, projectId.toString());
+                    stmt2.executeUpdate();
+                }
+
+                try (PreparedStatement stmt3 = conn.prepareStatement(query3)) {
+                    stmt3.setString(1, projectId.toString());
+                    return stmt3.executeUpdate() > 0;
+                }
+            }
 
         } catch (SQLException e) {
             System.err.println("Error deleting project with ID: " + projectId);
